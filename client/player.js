@@ -21,13 +21,13 @@ Player.prototype.setPosition = function(virtualX, virtualY) {
   var positioning = d3.select('.player')
     .data([[x,y]]);
   // if player is already on board, update position
-  positioning.select('circle')
-    .attr('cx', function(d) { 
-      return d[0];
-    })
-    .attr('cy', function(d) {
-      return d[1];
-    });
+  // positioning.select('circle')
+  //   .attr('cx', function(d) { 
+  //     return d[0];
+  //   })
+  //   .attr('cy', function(d) {
+  //     return d[1];
+  //   });
 
 
   // if starting game, set player into position in live game
@@ -38,7 +38,9 @@ Player.prototype.setPosition = function(virtualX, virtualY) {
     .attr('cy', function(d) {
      return d[1];
     })
-      .attr('r', this.r);  
+    .attr('r', this.r)
+    .style('fill', 'orange')
+    .style('stroke', 'blue');  
 };
 
 Player.prototype.keepInBoardX = function(x) {
@@ -64,6 +66,7 @@ Player.prototype.keepInBoardY = function(y) {
 Player.prototype.dragPlayer = function () {
   var player = d3.select('.player').select('circle');
   var dragBehavior = d3.behavior.drag()
-    .on('drag', function() { player.attr('cx', rToV.x(d3.event.x)).attr('cy', rToV.y(d3.event.y)) })
-  d3.select('.player').on.call(dragBehavior);
+    .on('drag', function() { player.attr('cx', d3.event.x)
+      .attr('cy', d3.event.y) })
+  player.call(dragBehavior);
 }
