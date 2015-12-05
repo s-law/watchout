@@ -27,7 +27,6 @@ var Player = function() {
 Player.prototype.setPosition = function(virtualX, virtualY) {
   this.xPos = this.keepInBoardX(virtualX);
   this.yPos = this.keepInBoardY(virtualY);
-  console.log(this.xPos);
 
   x = gameBoardAxes.x(this.xPos);
   y = gameBoardAxes.y(this.yPos);
