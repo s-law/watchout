@@ -8,12 +8,26 @@ var Player = function() {
     .attr('class', 'player');
   // draw intial position
 
-  this.setPosition(this.xPos, this.yPos);
+  // this.setPosition(this.xPos, this.yPos);
+
+  d3.select('.player').data([[this.xPos,this.yPos]])
+    .append('circle')
+    .attr('cx', function(d) {
+      return gameBoardAxes.x(d[0]);
+    })
+    .attr('cy', function(d) {
+     return gameBoardAxes.y(d[1]);
+    })
+    .attr('r', this.r)
+    .style('fill', 'orange')
+    .style('stroke', 'blue'); 
+  this.dragPlayer();
 }
 
 Player.prototype.setPosition = function(virtualX, virtualY) {
   this.xPos = this.keepInBoardX(virtualX);
   this.yPos = this.keepInBoardY(virtualY);
+  console.log(this.xPos);
 
   x = gameBoardAxes.x(this.xPos);
   y = gameBoardAxes.y(this.yPos);
@@ -21,26 +35,26 @@ Player.prototype.setPosition = function(virtualX, virtualY) {
   var positioning = d3.select('.player')
     .data([[x,y]]);
   // if player is already on board, update position
-  // positioning.select('circle')
-  //   .attr('cx', function(d) { 
-  //     return d[0];
-  //   })
-  //   .attr('cy', function(d) {
-  //     return d[1];
-  //   });
-
-
-  // if starting game, set player into position in live game
-  positioning.append('circle')
-    .attr('cx', function(d) {
+  positioning.select('circle')
+    .attr('cx', function(d) { 
       return d[0];
     })
     .attr('cy', function(d) {
-     return d[1];
-    })
-    .attr('r', this.r)
-    .style('fill', 'orange')
-    .style('stroke', 'blue');  
+      return d[1];
+    });
+
+
+  // if starting game, set player into position in live game
+  // positioning.append('circle')
+  //   .attr('cx', function(d) {
+  //     return d[0];
+  //   })
+  //   .attr('cy', function(d) {
+  //    return d[1];
+  //   })
+  //   .attr('r', this.r)
+  //   .style('fill', 'orange')
+  //   .style('stroke', 'blue');  
 };
 
 Player.prototype.keepInBoardX = function(x) {
@@ -64,9 +78,13 @@ Player.prototype.keepInBoardY = function(y) {
 };
 
 Player.prototype.dragPlayer = function () {
+  var playerClass = this;
   var player = d3.select('.player').select('circle');
   var dragBehavior = d3.behavior.drag()
-    .on('drag', function() { player.attr('cx', d3.event.x)
-      .attr('cy', d3.event.y) })
+    .on('drag', function() {
+      player.attr('cx', d3.event.x)
+      .attr('cy', d3.event.y);
+      playerClass.setPosition(rToV.x(d3.event.x), rToV.y(d3.event.y));
+    })
   player.call(dragBehavior);
 }
