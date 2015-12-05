@@ -34,5 +34,3 @@ var changeBestScore = function() {
     changeStats("highscore");
   }
 };
-
-
