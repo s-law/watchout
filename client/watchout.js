@@ -19,7 +19,6 @@ var gameBoard = d3.select('.board')
   .append('svg')
   .attr("height", gameOptions.height)
   .attr("width", gameOptions.width)
-  .style("background-color", "red");
 
 var changeStats = function(whatStats) {
   whatStats = whatStats || "current";
@@ -34,3 +33,30 @@ var changeBestScore = function() {
     changeStats("highscore");
   }
 };
+
+var createEnemies = function() {
+  var arrEne = [];
+  for (var i=0; i<gameOptions.nEnemies; i++) {
+    arrEne.push({id: i,
+      x: gameBoardAxes.x(Math.random()*100),
+      y: gameBoardAxes.y(Math.random()*100)});
+  }
+  return arrEne;
+};
+
+var render = function(arr) {
+  var allEne = d3.select('svg').selectAll("circle.enemies")
+    .data(arr, function(d) {
+      return d.id;
+    });
+  
+  allEne.enter()
+    .append("svg:circle")
+    .attr("class", "enemies")
+    .attr("cx", function(d) {return d.x})
+    .attr("cy", function(d) {return d.y})
+    .attr("r", 10);
+};
+
+
+
