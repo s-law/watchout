@@ -2,7 +2,7 @@
 var gameOptions = {
   height: 450, 
   width: 700,
-  nEnemies: 30,
+  nEnemies: 5,
   padding: 20
 };
 var gameStats = {
@@ -53,25 +53,14 @@ var createEnemies = function() {
   return arrEne;
 };
 
-var enemiesStepPosition = function(enemyObj, timestep) {
-  var startX = enemyObj.x;
-  var startY = enemyObj.y;
-  var randLocEnd = randomCoor();
-  var endX = randLocEnd[0];
-  var endY = randLocEnd[1];
-  var enemiesNextLocX = startX + (endX-startX)*timestep;
-  var enemiesNextLocY = startY + (endY-startY)*timestep;
-  enemyObj.x = enemiesNextLocX;
-  enemyObj.y = enemiesNextLocY;
-  return [enemiesNextLocX, enemiesNextLocY];  
-}
 
 var render = function(arr, player) {
-
+  // debugger;
   var allEne = d3.select('svg.enemy').selectAll("circle.enemies")
     .data(arr, function(d) {
       return d.id;
     });
+  //console.log(JSON.stringify(allEne));
 
   allEne.enter()
     .append("svg:circle")
@@ -80,49 +69,75 @@ var render = function(arr, player) {
     .attr("cy", function(d) {return d.y})
     .attr("r", function(d) {return d.r});
 
-  allEne.transition().duration(1000).tween('custom', function() {
-    return function(t) {
-      updateEnemiesAndCollisionCheck(t);
+  var crashCheck = function(enemy) {
+    console.log("cC: ", enemy);
+    var crashDist = player.r + parseInt(enemy.attr('r'));
+    
+    var playerRealX = gameBoardAxes.x(player.xPos);
+    var playerRealY = gameBoardAxes.y(player.yPos);
+
+    var locDistance = Math.pow((playerRealX - parseFloat(enemy.attr('cx'))), 2) + Math.pow((playerRealY - parseFloat(enemy.attr('cy'))), 2);
+
+    if (locDistance < Math.pow(crashDist, 2) ) {
+      // console.log(crashDist, Math.pow(collisionDist, 2));
+      gameStats.current = 0;
+      gameStats.collisions++;
+      changeStats();
+      changeStats('collisions');
+      changeBestScore();
     }
-  })
-    .attr("cx", function(d) {return d.x})
-    .attr("cy", function(d) {return d.y});
-
-  var updateEnemiesAndCollisionCheck = function(t) {
-    var newPos = [];
-    for (var i = 0; i < arr.length; i++) {
-      newPos.push(enemiesStepPosition(arr[i], t))
-      if (i === 10 && t % 4 === 0) {
-        console.log(newPos[i][0], newPos[i][1]);
-      }
-    }
-
-    // check collision on these positions
-    for (var i = 0; i < arr.length; i++) {
-      var collisionDist = player.r + arr[i].r;
-
-      if ( Math.pow((player.xPos - arr[i].x), 2) + Math.pow((player.yPos - arr[i].y), 2) < Math.pow(collisionDist, 2)) {
-        gameStats.current = 0;
-        gameStats.collisions++;
-        changeStats();
-        changeStats('collisions');
-        changeBestScore();
-      }
-    };
   };
+
+  var stepAndCrashCheck = function(endPos) {
+    enemy = d3.select(this);
+    //console.log("sACC :", this);
+    
+    var oldPos = {
+      x: parseFloat(enemy.attr('cx')),
+      y: parseFloat(enemy.attr('cy'))
+    }
+    var newPos = {
+      x: gameBoardAxes.x(endPos.x),
+      y: gameBoardAxes.y(endPos.y)
+    }
+
+    return function(t) {
+      crashCheck(enemy);
+
+      newPosStep = {
+        x: oldPos.x + (newPos.x - oldPos.x)*t,
+        y: oldPos.y + (newPos.y - oldPos.y)*t
+      } 
+
+      enemy.attr('cx', newPosStep.x)
+        .attr('cy', newPosStep.y);
+    } 
+  }  
+
+  allEne.transition().duration(1000).tween('custom', stepAndCrashCheck);
+  
 };
 
 var runGame = function() {
+  //debugger;
   var player = new Player();
-  var arr = createEnemies();
   d3.select("svg.gameBoard")
     .append('svg')
     .attr("class", "enemy");
-  
-  setInterval(function() {
+
+  var gameStep = function() {
+    var arr = createEnemies();
     render(arr, player);
-    console.log("Player: ", player.xPos, player.yPos);
-  }, 1000);
+  }
+
+  gameStep();
+  setInterval(gameStep, 1000);
+
+  
+  // setInterval(function() {
+  //   render(arr, player);
+  //   console.log("Player: ", player.xPos, player.yPos);
+  // }, 2000);
 
 };
 
@@ -131,10 +146,4 @@ var randomCoor = function() {
   var y = gameBoardAxes.y(Math.random()*100);
   return [x, y];
 };
-
-// var collCheck = function() {
-
-//   //for (var i=0; i)
-// };
-
 
